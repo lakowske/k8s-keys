@@ -75,6 +75,7 @@ parse-cmd() {
             api-keys
             admin-keys
             worker-keys
+            ;;
         *)
             print-usage
             ;;
