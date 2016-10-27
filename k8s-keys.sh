@@ -53,6 +53,8 @@ node-keys() {
 
     /usr/bin/openssl x509 -req -in $CSR -CA $CA -CAkey $CA_KEY -CAcreateserial -out $KEYDIR/$KEYTYPE.pem -days 365 -extensions v3_req -extfile /openssl.cnf
 
+    cp $CA $KEYDIR
+
     rm $CSR
 }
 
