@@ -100,6 +100,15 @@ parse-cmd() {
             print-usage
             ;;
     esac
+
+    #maybe tar and send to stdout
+    if [ "$TAR_TO_STDOUT" = "" ]
+    then
+        echo "Wrote keys to /certs. Set TAR_TO_STDOUT environment variable to output a tar to stdout."
+    else
+        tar -cf - /certs
+    fi
+
 }
 
 parse-cmd
