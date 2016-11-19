@@ -10,6 +10,7 @@ ADD ./openssl.cnf /
 ADD ./worker-openssl.cnf /
 ADD ./k8s-keys.sh /
 
+RUN mkdir /certs
 RUN chmod 755 /k8s-keys.sh
 
 ENTRYPOINT ["/k8s-keys.sh"]

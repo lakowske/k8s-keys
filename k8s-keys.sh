@@ -106,7 +106,7 @@ parse-cmd() {
     then
         echo "Wrote keys to /certs. Set TAR_TO_STDOUT environment variable to output a tar to stdout."
     else
-        tar -cf - /certs
+        (cd /certs ; tar -cf - .)
     fi
 
 }
