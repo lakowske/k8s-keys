@@ -69,7 +69,7 @@ node-keys() {
 }
 
 worker-keys() {
-    echo "worker: $NODE_FQDN $WORKER_IP"
+
     #Need to set env variable for use in worker-openssl.cnf
     export WORKER_IP=$WORKER_IP
     CSR=$WORKERDIR/$NODE_FQDN-worker.csr
@@ -92,6 +92,9 @@ api-keys() {
 }
 
 parse-cmd() {
+
+    (cd /certs ; tar -xf - .)
+
     case $CMD in
         admin)
             admin-keys
