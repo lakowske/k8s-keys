@@ -1,4 +1,14 @@
 #!/bin/bash
+#
+# Generates a set of keys and stream to stdout in tar format
+#
+# Seth Lakowske
+# Copyright 2016
+# License: BSD3
+#
+# Example:
+# ./k8s-keys.sh all worker0 192.168.10.100 | tar -xf -
+
 
 print-usage() {
     echo "Usage: $0 <api <node_fqdn> <node_ip>|
@@ -101,14 +111,7 @@ parse-cmd() {
             ;;
     esac
 
-    #maybe tar and send to stdout
-    if [ "$TAR_TO_STDOUT" = "" ]
-    then
-        echo "Wrote keys to /certs. Set TAR_TO_STDOUT environment variable to output a tar to stdout."
-    else
-        (cd /certs ; tar -cf - .)
-    fi
-
+    (cd /certs ; tar -cf - .)
 }
 
 parse-cmd
