@@ -11,8 +11,9 @@
 
 
 print-usage() {
-    echo "Usage: $0 <api <node_fqdn> <node_ip>|
+    echo "Usage: $0 <api <node_fqdn> <node_ip> [external_ip]|
                      admin|
+                     ca|
                      worker <node_fqdn> <node_ip>>|
                      all <node_fqdn> <node_ip>>"
     exit 1
@@ -21,6 +22,7 @@ print-usage() {
 CMD=$1
 NODE_FQDN=$2
 NODE_IP=$3
+EXTERNAL_IP=$4
 
 MASTER_HOST=$2
 
@@ -30,6 +32,7 @@ ADMINDIR=$CERTS/admin
 WORKERDIR=$CERTS/workers/$WORKER_FQDN
 CA=$CERTS/ca.pem
 CA_KEY=$CERTS/ca-key.pem
+OPENSSL_CONF=$CERTS/openssl.cnf
 
 admin-keys() {
     CSR=$ADMINDIR/admin.csr
@@ -40,7 +43,7 @@ admin-keys() {
 
     /usr/bin/openssl req -new -key $ADMINDIR/admin-key.pem -out $CSR -subj "/CN=kube-admin"
 
-    /usr/bin/openssl x509 -req -in $CSR -CA $CA -CAkey $CA_KEY -CAcreateserial -out $ADMINDIR/admin.pem -days 365
+    /usr/bin/openssl x509 -req -in $CSR -CA $CA -CAkey $CA_KEY -CAcreateserial -out $ADMINDIR/admin.pem -days 1000
 
     rm $CSR
 
@@ -59,9 +62,9 @@ node-keys() {
 
     /usr/bin/openssl genrsa -out $KEYDIR/$KEYTYPE-key.pem 2048
 
-    /usr/bin/openssl req -new -key $KEYDIR/$KEYTYPE-key.pem -out $CSR -subj "$SUBJ" -config /openssl.cnf
+    /usr/bin/openssl req -new -key $KEYDIR/$KEYTYPE-key.pem -out $CSR -subj "$SUBJ" -config $OPENSSL_CONF
 
-    /usr/bin/openssl x509 -req -in $CSR -CA $CA -CAkey $CA_KEY -CAcreateserial -out $KEYDIR/$KEYTYPE.pem -days 365 -extensions v3_req -extfile /openssl.cnf
+    /usr/bin/openssl x509 -req -in $CSR -CA $CA -CAkey $CA_KEY -CAcreateserial -out $KEYDIR/$KEYTYPE.pem -days 1000 -extensions v3_req -extfile $OPENSSL_CONF
 
     cp $CA $KEYDIR
 
@@ -69,26 +72,28 @@ node-keys() {
 }
 
 worker-keys() {
-
-    #Need to set env variable for use in worker-openssl.cnf
-    export WORKER_IP=$WORKER_IP
+    export NODE_IP=$NODE_IP
+    export EXTERNAL_IP=$EXTERNAL_IP
     CSR=$WORKERDIR/$NODE_FQDN-worker.csr
 
     node-keys $NODE_FQDN worker "/CN=$NODE_FQDN"
-
 }
 
 
 api-keys() {
-
     CSR=$CERTS/apiserver.csr
+    node-keys $NODE_FQDN apiserver "/CN=kube-apiserver"
+}
 
+#Create our own CA (Certificate Authority)
+ca() {
+    #Generates a RSA keypair.
+    #  Public key can be extracted: openssl rsa -in $CA_KEY -pubout
+    #  Verify key consistency with: openssl rsa -in $CA_KEY -check
     /usr/bin/openssl genrsa -out $CA_KEY 2048
 
+    #Generates self-signed certificate and writes it to $CA
     /usr/bin/openssl req -x509 -new -nodes -key $CA_KEY -days 10000 -out $CA -subj "/CN=kube-ca"
-
-    node-keys $NODE_FQDN apiserver "/CN=kube-apiserver"
-
 }
 
 parse-cmd() {
@@ -105,7 +110,11 @@ parse-cmd() {
         api)
             api-keys
             ;;
+        ca)
+            ca
+            ;;
         all)
+            ca
             api-keys
             admin-keys
             ;;

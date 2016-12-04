@@ -6,8 +6,6 @@ ENV CERTS=/certs
 
 RUN apk add --update openssl bash && rm /var/cache/apk/*
 
-ADD ./openssl.cnf /
-ADD ./worker-openssl.cnf /
 ADD ./k8s-keys.sh /
 
 RUN mkdir /certs
