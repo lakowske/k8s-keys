@@ -4,7 +4,7 @@ MAINTAINER Seth Lakowske <lakowske@gmail.com>
 
 ENV CERTS=/certs
 
-RUN apk add --update openssl bash && rm /var/cache/apk/*
+RUN apk add --update openssl bash tar && rm /var/cache/apk/*
 
 ADD ./k8s-keys.sh /
 
