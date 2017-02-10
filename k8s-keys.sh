@@ -98,7 +98,7 @@ ca() {
 
 parse-cmd() {
 
-    (cd /certs ; tar -xf - .)
+    (cd /certs ; tar -xf -)
 
     case $CMD in
         admin)
